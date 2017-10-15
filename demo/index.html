@@ -26,7 +26,7 @@
         <div class="draggable eldnd">Elemento 3</div>
       </draggable-zone>
 
-      <draggable-zone size="400" figure="square" elementsize="20" title="Zona Dropable 2">
+      <draggable-zone size="400" figure="square" elementsize="20" title="Zona Dropable 2" ondropend="droppedAction()">
           <div class="draggable eldnd">Elemento 4</div>
           <div class="draggable eldnd">Elemento 5</div>
           <div class="draggable eldnd">Elemento 6</div>
@@ -39,11 +39,11 @@
     </div>
 
     <script>
-      var myEvent;
-      document.querySelector('draggable-zone').addEventListener('elementIsDropped', droppedElement);
-      var droppedElement = function(ev) {
-        console.log('->', ev);
+      var droppedAction = function(ev) {
+        console.log(ev.detail);
       }
+      var dz = document.querySelectorAll('draggable-zone');
+      dz[1].addEventListener('dropend', droppedAction, true);
     </script>
   </body>
 </html>
