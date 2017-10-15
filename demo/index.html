@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>draggable-zone demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../draggable-zone.html">
+    <link rel="import" href="../../information-imagetext/information-imagetext.html">
+
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+        draggable-zone { float:left; margin:10px; padding:20px; }
+      </style>
+    </custom-style>
+  </head>
+  <body>
+    <div class="vertical-section-container centered">
+      <h3>Basic dragable-zone demo</h3>
+      <draggable-zone size="400" figure="square" elementsize="30" title="Zona Dropable 1">
+        <div class="draggable eldnd">Elemento 1</div>
+        <div class="draggable eldnd">Elemento 2</div>
+        <div class="draggable eldnd">Elemento 3</div>
+      </draggable-zone>
+
+      <draggable-zone size="400" figure="square" elementsize="20" title="Zona Dropable 2">
+          <div class="draggable eldnd">Elemento 4</div>
+          <div class="draggable eldnd">Elemento 5</div>
+          <div class="draggable eldnd">Elemento 6</div>
+      </draggable-zone>
+      <draggable-zone size="400" figure="square" elementsize="30" title="Zona Dropable JAIL" jail></draggable-zone>
+      <draggable-zone size="400" figure="square" elementsize="30" title="Zona Draggable VIP" vip>
+          <div class="draggable eldnd">Elemento 7</div>
+          <div class="draggable eldnd">Elemento 8</div>
+      </draggable-zone>
+    </div>
+
+    <script>
+      var myEvent;
+      document.querySelector('draggable-zone').addEventListener('elementIsDropped', droppedElement);
+      var droppedElement = function(ev) {
+        console.log('->', ev);
+      }
+    </script>
+  </body>
+</html>

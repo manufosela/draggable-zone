@@ -1,0 +1,240 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<script src="bower_components/interactjs/interact.js"></script>
+
+<dom-module id="draggable-zone" on-drop="drop">
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin:0;
+        padding:0;
+      }
+    
+      :host .draggable { 
+        float:left; 
+        margin:5px;
+        padding:10px;
+        background:#DDD;
+      }
+
+      :host .jail {
+        background: repeating-linear-gradient(to right, #DDD, #DDD 10px, #FFF 10px, #FFF 20px);
+      }
+
+      :host .vip {
+        background: radial-gradient(#EEF,#DDF,#CCF);
+      }
+
+      :host .dragActive {
+        opacity:0.3;
+      }
+
+      :host .dropActive {
+        border:2px dashed #FCC;
+      }
+      :host .inactive {
+        border:2px solid #CCC;
+      }
+
+      :host h3 {
+        margin:0;
+        padding:0;
+        text-align:center;
+      }
+
+      :host .draggable_zone { 
+        border-radius: 4px;
+        margin: 10px auto;
+        padding: 10px;
+        transition: background-color 0.3s;
+      }
+    </style>
+
+    <div id="draggable_zone_{{id}}" class="draggable_zone" style$="width:{{size}}px; height:{{size}}px;">
+      <h3>{{title}}</h3>
+    </div>
+  </template>
+
+  <script>
+    class DraggableZone extends Polymer.Element {
+      static get is() { return 'draggable-zone'; }
+
+      static get properties() {
+        return {
+          id: {
+            type: 'String',
+            computed: '_getId()'
+          },
+          title:{
+            type: String,
+            value: ''
+          },
+          size: {
+            type: Number,
+            value: 200,
+            observer:'_containerSize'
+          },
+          elementsize: {
+            type: Number,
+            value: 40
+          },
+          figure: {
+            type: String,
+            value: "square"
+          },
+          vip: {
+            type: Boolean,
+            value: false
+          },
+          jail: {
+            type: Boolean,
+            value: false
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        var dndZone = this.root.querySelector('#draggable_zone_' + this.id);
+
+        dndZone.classList.add('dropzone');
+        if (this.figure==='circle') {
+          dndZone.style.borderRadius = '50%';
+        }
+        if (this.jail) { 
+          dndZone.classList.add('jail');
+        }
+        if (this.vip) {
+          dndZone.classList.add('vip');
+        }
+
+        this._insertElementsIntoDragZone();       
+        this.setupEldndDragging();
+        this.setupDropZone();
+      }
+
+      _containerSize() {
+        var dragZone = this.root.querySelector('#draggable_zone_' + this.id);
+        dragZone.style.width = this.size + "px";
+        dragZone.style.height = this.size + "px";
+      }
+
+      _insertElementsIntoDragZone() {
+        var elements = this.querySelectorAll('.draggable');
+        var dragZone = this.root.querySelector('#draggable_zone_' + this.id);
+        dragZone.classList.add('inactive');
+        elements.forEach(function(element) {
+          element.id = this._getId('elDND');
+          element.classList.add('drag-drop');
+          dragZone.appendChild(element);
+        }, this);
+      }
+
+      _getId(prefix) {
+        if (!Date.now) {
+          Date.now = function() { return new Date().getTime(); }
+        }
+        var id = parseInt(Math.random(Date.now())*100000);
+        return (prefix)?prefix+'_'+id:id; 
+      }
+
+
+      setupEldndDragging() {
+        function dragMoveListener (event) {
+          var target = event.target;
+          var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+          var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+          target.style.webkitTransform =
+          target.style.transform =
+            'translate(' + x + 'px, ' + y + 'px)';
+          target.setAttribute('data-x', x);
+          target.setAttribute('data-y', y);
+        }
+ 
+        var self = this;
+        interact(".eldnd")
+        .draggable({
+          inertia: true,
+          restrict: {
+            restriction: ".draggable_zone",
+            endOnly: true,
+            elementRect: { top: -1, left: 0, bottom: 1, right: 1 }
+          },
+          autoScroll: true,
+          onmove: dragMoveListener
+        })
+      }
+
+      setupDropZone() {
+        var dropZones = this.root.querySelectorAll('.dropzone');
+        var self = this;
+        dropZones.forEach(function(dropzone){
+          interact(dropzone).dropzone({
+            accept:'.eldnd',
+            overlap:'pointer',
+            ondragenter:function(ev){
+              var draggableElement = ev.relatedTarget;
+              var dropzoneElement = ev.target;
+              draggableElement.classList.add('dragActive');
+              if ( (draggableElement.newDropZoneEl || dropzoneElement.id !== draggableElement.parentElement.id) && draggableElement.jail !== true) {
+                if (self.jail) {
+                  console.log('jail!');
+                  draggableElement.jail = true;
+                }
+                if (!dropzoneElement.parentNode.host.vip) {
+                  draggableElement.newDropZoneEl = dropzoneElement;
+                  interact(".eldnd")
+                    .draggable({
+                      restrict: {restriction: '#'+dropzoneElement.id}
+                    });
+                } else {
+                  console.log('vip!');
+                }
+              }
+            },
+            ondropactivate: function (ev) {
+              var dropzoneElement = ev.target;
+              dropzoneElement.classList.add('dropActive');
+              dropzoneElement.classList.remove('inactive');
+              interact(".eldnd")
+                .draggable({
+                  restrict: {
+                    restriction: '.draggable_zone',
+                    endOnly: true,
+                    elementRect: { top: -1, left: 0, bottom: 1, right: 1 }
+                  }
+                });
+            },
+            ondrop:function(ev){
+              var draggableElement = ev.relatedTarget;
+              var dropzoneElement = ev.target;
+              var dropElId = dropzoneElement.id;
+              var newDropZoneEl = draggableElement.newDropZoneEl || false;
+              if (newDropZoneEl) {
+                newDropZoneEl.appendChild(draggableElement);
+                draggableElement.style.transform = '';
+                dropElId = newDropZoneEl.id;
+              }
+            },
+            ondropdeactivate: function (ev) {
+              var draggableElement = ev.relatedTarget;
+              var dropzoneElement = ev.target;
+              var newDropZoneEl = draggableElement.newDropZoneEl || false;
+              draggableElement.classList.remove('dragActive');
+              dropzoneElement.classList.remove('dropActive');
+              dropzoneElement.classList.add('inactive');
+              if (newDropZoneEl) {
+                dropzoneElement = newDropZoneEl;
+                draggableElement.newDropZoneEl = null;
+                draggableElement.removeAttribute('data-x');
+                draggableElement.removeAttribute('data-y');
+              }
+            }
+          });
+        })
+      }
+    } 
+
+    window.customElements.define(DraggableZone.is, DraggableZone);
+  </script>
+</dom-module>
