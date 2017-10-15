@@ -62,8 +62,10 @@
       static get properties() {
         return {
           id: {
-            type: 'String',
-            computed: '_getId()'
+            type: 'String'
+          },
+          dndZone: {
+            type: String
           },
           title:{
             type: String,
@@ -95,17 +97,18 @@
 
       connectedCallback() {
         super.connectedCallback();
-        var dndZone = this.root.querySelector('#draggable_zone_' + this.id);
+        this.id = this.id || this._getId();
+        this.dndZone = this.root.querySelector('#draggable_zone_' + this.id);
 
-        dndZone.classList.add('dropzone');
+        this.dndZone.classList.add('dropzone');
         if (this.figure==='circle') {
-          dndZone.style.borderRadius = '50%';
+          this.dndZone.style.borderRadius = '50%';
         }
         if (this.jail) { 
-          dndZone.classList.add('jail');
+          this.dndZone.classList.add('jail');
         }
         if (this.vip) {
-          dndZone.classList.add('vip');
+          this.dndZone.classList.add('vip');
         }
 
         this._insertElementsIntoDragZone();       
@@ -114,19 +117,19 @@
       }
 
       _containerSize() {
-        var dragZone = this.root.querySelector('#draggable_zone_' + this.id);
-        dragZone.style.width = this.size + "px";
-        dragZone.style.height = this.size + "px";
+        this.id = this.id || this._getId();
+        this.dndZone = this.root.querySelector('#draggable_zone_' + this.id);
+        this.dndZone.style.width = this.size + "px";
+        this.dndZone.style.height = this.size + "px";
       }
 
       _insertElementsIntoDragZone() {
         var elements = this.querySelectorAll('.draggable');
-        var dragZone = this.root.querySelector('#draggable_zone_' + this.id);
-        dragZone.classList.add('inactive');
+        this.dndZone.classList.add('inactive');
         elements.forEach(function(element) {
           element.id = this._getId('elDND');
           element.classList.add('drag-drop');
-          dragZone.appendChild(element);
+          this.dndZone.appendChild(element);
         }, this);
       }
 
@@ -161,7 +164,12 @@
             elementRect: { top: -1, left: 0, bottom: 1, right: 1 }
           },
           autoScroll: true,
-          onmove: dragMoveListener
+          onmove: dragMoveListener,
+          onend: function(ev) {
+            var dndEvent = new CustomEvent('dropend', {detail:{me:ev.target, dad:ev.target.parentNode}});
+            var el = ev.target.parentNode.parentNode.host;
+            el.dispatchEvent(dndEvent, true);
+          }
         })
       }
 
@@ -178,7 +186,6 @@
               draggableElement.classList.add('dragActive');
               if ( (draggableElement.newDropZoneEl || dropzoneElement.id !== draggableElement.parentElement.id) && draggableElement.jail !== true) {
                 if (self.jail) {
-                  console.log('jail!');
                   draggableElement.jail = true;
                 }
                 if (!dropzoneElement.parentNode.host.vip) {
@@ -187,8 +194,6 @@
                     .draggable({
                       restrict: {restriction: '#'+dropzoneElement.id}
                     });
-                } else {
-                  console.log('vip!');
                 }
               }
             },
