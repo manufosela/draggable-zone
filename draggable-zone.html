@@ -111,9 +111,31 @@
           this.dndZone.classList.add('vip');
         }
 
+        this.setup();
+      }
+
+      setup() {
         this._insertElementsIntoDragZone();       
         this.setupEldndDragging();
         this.setupDropZone();
+        this.mutationObserve();
+      }
+
+      mutationObserve(){
+        var self = this;
+        var observer = new MutationObserver(function (mutations) {
+          console.log('entra');
+          mutations.forEach(function (mutation) {
+            self.setup();
+          });
+        });
+        observer.observe(this,{
+          attributes: true,
+          childList: true,
+          characterData: true,
+          characterDataOldValue: true,
+          subtree: true
+        });
       }
 
       _containerSize() {
