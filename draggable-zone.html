@@ -55,7 +55,7 @@
       }
     </style>
 
-    <div id="draggable_zone_{{id}}" class="draggable_zone" style$="width:{{size}}px; height:{{size}}px;">
+    <div id="draggable_zone_{{id}}" class="draggable_zone" style$="width:{{size}}px; height:auto;">
       <h3>{{title}}</h3>
     </div>
   </template>
@@ -139,8 +139,7 @@
       _containerSize() {
         this.id = this.id || this._getId();
         this.dndZone = this.root.querySelector('#draggable_zone_' + this.id);
-        this.dndZone.style.width = this.size + "px";
-        this.dndZone.style.height = this.size + "px";
+        this.dndZone.style.display="table";
       }
 
       _insertElementsIntoDragZone() {
