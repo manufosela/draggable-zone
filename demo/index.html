@@ -11,36 +11,37 @@
     <link rel="import" href="../draggable-zone.html">
     <link rel="import" href="../../information-imagetext/information-imagetext.html">
 
-    <custom-style>
-      <style is="custom-style" include="demo-pages-shared-styles">
-        draggable-zone { float:left; margin:10px; padding:20px; }
-      </style>
-    </custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles">
+      draggable-zone { 
+        float:left; margin:10px; padding:20px; 
+        --background-draggable-color: #DDD;
+      }
+    </style>
   </head>
   <body>
     <div class="vertical-section-container centered">
       <h3>Basic dragable-zone demo</h3>
       <draggable-zone size="400" figure="square" elementsize="30" title="Zona Dropable 1">
-        <div class="draggable eldnd">Elemento 1</div>
-        <div class="draggable eldnd">Elemento 2</div>
-        <div class="draggable eldnd">Elemento 3</div>
+        <div>Elemento 1</div>
+        <div>Elemento 2</div>
+        <div>Elemento 3</div>
       </draggable-zone>
 
       <draggable-zone size="400" figure="square" elementsize="20" title="Zona Dropable 2" ondropend="droppedAction()">
-          <div class="draggable eldnd">Elemento 4</div>
-          <div class="draggable eldnd">Elemento 5</div>
-          <div class="draggable eldnd">Elemento 6</div>
+          <div>Elemento 4</div>
+          <div>Elemento 5</div>
+          <div>Elemento 6</div>
       </draggable-zone>
       <draggable-zone size="400" figure="square" elementsize="30" title="Zona Dropable JAIL" jail></draggable-zone>
       <draggable-zone size="400" figure="square" elementsize="30" title="Zona Draggable VIP" vip>
-          <div class="draggable eldnd">Elemento 7</div>
-          <div class="draggable eldnd">Elemento 8</div>
+          <div>Elemento 7</div>
+          <div>Elemento 8</div>
       </draggable-zone>
     </div>
 
     <script>
       var droppedAction = function(ev) {
-        console.log(ev.detail);
+        alert('detectado evento "dropend" en la Zona 2');
       }
       var dz = document.querySelectorAll('draggable-zone');
       dz[1].addEventListener('dropend', droppedAction, true);
