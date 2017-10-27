@@ -140,6 +140,8 @@
         this.id = this.id || this._getId();
         this.dndZone = this.root.querySelector('#draggable_zone_' + this.id);
         this.dndZone.style.display="table";
+        this.dndZone.style.width="auto";
+        this.dndZone.style.maxWidth=this.size+"px";
       }
 
       _insertElementsIntoDragZone() {
