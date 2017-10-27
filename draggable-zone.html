@@ -105,7 +105,7 @@
         this.id = this.id || this._getId();
         this.dndZone = this.root.querySelector('#draggable_zone_' + this.id);
         this.dndZone.classList.add('dropzone');
-        if (this.figure==='circle') { this.dndZone.style.borderRadius = '50%'; }
+        if (this.figure==='circle') { this.dndZone.style.borderRadius = '50%'; this.dndZone.style.padding = "50px"; }
         if (this.jail) { this.dndZone.classList.add('jail'); }
         if (this.vip) { this.dndZone.classList.add('vip'); }
         this._setup();
@@ -153,6 +153,7 @@
 
       _insertElement(element) {
         element.id = this._getId('elDND');
+        if (this.figure==='circle') { element.style.borderRadius = "50%"; }
         element.classList.add('drag-drop', 'draggable', 'eldnd');
         this.dndZone.appendChild(element);
       }
