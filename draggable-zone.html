@@ -8,21 +8,26 @@
         display: block;
         margin:0;
         padding:0;
+        --background-draggable-color: #DDD;
+        --border-drop-active: 2px dashed #FCC;
+        --border-drop-inactive: 2px solid #CCC;
+        --background-vip: radial-gradient(#FFF,#BBB,#999);
+        --background-jail: repeating-linear-gradient(to right, #DDD, #DDD 10px, #FFF 10px, #FFF 20px);
       }
     
       :host .draggable { 
         float:left; 
         margin:5px;
         padding:10px;
-        background:#DDD;
+        background:var(--background-draggable-color);
       }
 
       :host .jail {
-        background: repeating-linear-gradient(to right, #DDD, #DDD 10px, #FFF 10px, #FFF 20px);
+        background: var(--background-jail);
       }
 
       :host .vip {
-        background: radial-gradient(#EEF,#DDF,#CCF);
+        background: var(--background-vip);
       }
 
       :host .dragActive {
@@ -30,10 +35,10 @@
       }
 
       :host .dropActive {
-        border:2px dashed #FCC;
+        border:var(--border-drop-active);
       }
       :host .inactive {
-        border:2px solid #CCC;
+        border:var(--border-drop-inactive);
       }
 
       :host h3 {
@@ -99,43 +104,36 @@
         super.connectedCallback();
         this.id = this.id || this._getId();
         this.dndZone = this.root.querySelector('#draggable_zone_' + this.id);
-
         this.dndZone.classList.add('dropzone');
-        if (this.figure==='circle') {
-          this.dndZone.style.borderRadius = '50%';
-        }
-        if (this.jail) { 
-          this.dndZone.classList.add('jail');
-        }
-        if (this.vip) {
-          this.dndZone.classList.add('vip');
-        }
-
-        this.setup();
+        if (this.figure==='circle') { this.dndZone.style.borderRadius = '50%'; }
+        if (this.jail) { this.dndZone.classList.add('jail'); }
+        if (this.vip) { this.dndZone.classList.add('vip'); }
+        this._setup();
       }
 
-      setup() {
+      getElement(position){
+        var els = this.root.querySelectorAll('.draggable');
+        return els[position];
+      }
+
+      getAllElements(){
+        return this.root.querySelectorAll('.draggable');
+      }
+
+      setElement(element){
+        if (element && element instanceof HTMLElement) {
+          this._insertElement(element);
+          return true;
+        }
+        return false;
+      }
+
+      /*****************************************************************/
+
+      _setup() {
         this._insertElementsIntoDragZone();       
-        this.setupEldndDragging();
-        this.setupDropZone();
-        this.mutationObserve();
-      }
-
-      mutationObserve(){
-        var self = this;
-        var observer = new MutationObserver(function (mutations) {
-          console.log('entra');
-          mutations.forEach(function (mutation) {
-            self.setup();
-          });
-        });
-        observer.observe(this,{
-          attributes: true,
-          childList: true,
-          characterData: true,
-          characterDataOldValue: true,
-          subtree: true
-        });
+        this._setupEldndDragging();
+        this._setupDropZone();
       }
 
       _containerSize() {
@@ -146,13 +144,17 @@
       }
 
       _insertElementsIntoDragZone() {
-        var elements = this.querySelectorAll('.draggable');
+        var elements = this.querySelectorAll(':not([nodraggable])');
         this.dndZone.classList.add('inactive');
         elements.forEach(function(element) {
-          element.id = this._getId('elDND');
-          element.classList.add('drag-drop');
-          this.dndZone.appendChild(element);
+          this._insertElement(element);
         }, this);
+      }
+
+      _insertElement(element) {
+        element.id = this._getId('elDND');
+        element.classList.add('drag-drop', 'draggable', 'eldnd');
+        this.dndZone.appendChild(element);
       }
 
       _getId(prefix) {
@@ -164,19 +166,16 @@
       }
 
 
-      setupEldndDragging() {
+      _setupEldndDragging() {
         function dragMoveListener (event) {
           var target = event.target;
           var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
           var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-          target.style.webkitTransform =
-          target.style.transform =
-            'translate(' + x + 'px, ' + y + 'px)';
+          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
           target.setAttribute('data-x', x);
           target.setAttribute('data-y', y);
         }
  
-        var self = this;
         interact(".eldnd")
         .draggable({
           inertia: true,
@@ -191,13 +190,15 @@
             var dndEvent = new CustomEvent('dropend', {detail:{me:ev.target, dad:ev.target.parentNode}});
             var el = ev.target.parentNode.parentNode.host;
             el.dispatchEvent(dndEvent, true);
+            ev.target.style.webkitTransform = ev.target.style.transform = 'translate(0, 0)';
+            ev.target.setAttribute('data-x', 0);
+            ev.target.setAttribute('data-y', 0);
           }
         })
       }
 
-      setupDropZone() {
+      _setupDropZone() {
         var dropZones = this.root.querySelectorAll('.dropzone');
-        var self = this;
         dropZones.forEach(function(dropzone){
           interact(dropzone).dropzone({
             accept:'.eldnd',
@@ -207,7 +208,7 @@
               var dropzoneElement = ev.target;
               draggableElement.classList.add('dragActive');
               if ( (draggableElement.newDropZoneEl || dropzoneElement.id !== draggableElement.parentElement.id) && draggableElement.jail !== true) {
-                if (self.jail) {
+                if (this.jail) {
                   draggableElement.jail = true;
                 }
                 if (!dropzoneElement.parentNode.host.vip) {
@@ -218,7 +219,7 @@
                     });
                 }
               }
-            },
+            }.bind(this),
             ondropactivate: function (ev) {
               var dropzoneElement = ev.target;
               dropzoneElement.classList.add('dropActive');
@@ -258,7 +259,7 @@
               }
             }
           });
-        })
+        }.bind(this));
       }
     } 
 
