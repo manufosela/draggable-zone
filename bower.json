@@ -3,7 +3,7 @@
   "main": "dragable-zone.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "interactjs": "^1.2.9"
+    "interactjs": "https://github.com/taye/interact.js.git^1.2.9"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
